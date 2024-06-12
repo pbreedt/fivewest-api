@@ -1,0 +1,3941 @@
+openapi: 3.0.3
+info:
+  description: "API Documentation for FiveWest's wallet and RfQ trading services.\
+    \ Please visit dashboard.fivewest.co.za to sign up. Once your account has been\
+    \ verified to the sufficient level necessary for the given service, you can create\
+    \ an API key and secret with fine-grained service permissions in the 'API Management'\
+    \ section of the 'Profile' tab. These credentials must be provided in the /profile/api/v1/auth/token\
+    \ route in order to acquire a JWT to make further requests with. This JWT is valid\
+    \ for one week; the credentials do not expire but may be deleted."
+  title: FiveWest Client API
+  version: 0.1.0
+servers:
+- url: /
+paths:
+  /profile/api/v1/auth/token:
+    post:
+      description: |-
+        Gets a fresh JWT for a given API key and secret.
+
+        The token is only valid for 1 week - after with a new token must be fetched from this endpoint.
+
+        Body Parameters
+        -----------
+        - `key` **(required)**: API key.
+        - `secret` **(required)**: API secret.
+      operationId: login_api_v1_auth_token_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuth2ClientCredentialsRequestForm'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get OAuth2 access token from API key and secret
+      tags:
+      - API Auth
+  /wallet/api/v1/balance:
+    get:
+      description: |-
+        Gets wallet balances with pagination.
+
+        Query Parameters
+        -----------
+        - `page` **(optional)**: Page number/window to query for (defaults to 0 for the first page).
+        - `page_size` **(optional)**: Size of the page returned (defaults to 1, maximum size = 1000 records).
+        - `symbol` **(optional)**: Name of currency to filter on (e.g. BTC).
+      operationId: Get_all_wallet_balances_api_v1_balance_get
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page number
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          title: Currency symbol
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Balance'
+                title: Response Get All Wallet Balances Api V1 Balance Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Wallet Balances
+      tags:
+      - Balance
+  /wallet/api/v1/balance/{symbol}:
+    get:
+      description: |-
+        Gets balance for a specific symbol.
+
+        If a balance for that symbol is zero or doesn't exist, null will be returned.
+
+        Query Parameters
+        -----------
+        - `symbol` **(required)**: Name of currency to filter on (e.g. BTC).
+      operationId: Get_balance_for_symbol_api_v1_balance__symbol__get
+      parameters:
+      - explode: false
+        in: path
+        name: symbol
+        required: true
+        schema:
+          title: Currency symbol
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Balance For Symbol
+      tags:
+      - Balance
+  /wallet/api/v1/currency:
+    get:
+      description: |-
+        Gets all supported currencies with pagination
+
+        Query Parameters
+        -----------
+        - `page` **(optional)**: Page number/window to query for (defaults to 0 for the first page).
+        - `page_size` **(optional)**: Size of the page returned (defaults to 1, maximum size = 1000 records).
+        - `symbol` **(optional)**: Name of currency to filter on (e.g. BTC).
+        - `network` **(optional)**: Name of the blockchain network to filter on.
+        - `fiat` **(optional)**: Filter on fiat currencies or cryptocurrencies. If null, will return all records.
+      operationId: Get_all_supported_currency_information_api_v1_currency_get
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page number
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          title: Currency symbol
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 50
+          title: Currency network
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: fiat
+        required: false
+        schema:
+          title: Fiat
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Currency'
+                title: Response Get All Supported Currency Information Api V1 Currency
+                  Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Supported Currency Information
+      tags:
+      - Currency
+  /wallet/api/v1/currency/symbols:
+    get:
+      description: |-
+        Gets all supported symbols
+
+        Query Parameters
+        -----------
+        - `network` **(optional)**: Name of the blockchain network to filter on.
+        - `fiat` **(optional)**: Filter on fiat currencies or cryptocurrencies. If null, will return all records.
+      operationId: Get_all_supported_symbols_api_v1_currency_symbols_get
+      parameters:
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 50
+          title: Currency network
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: fiat
+        required: false
+        schema:
+          title: Fiat
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                title: Response Get All Supported Symbols Api V1 Currency Symbols
+                  Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Supported Symbols
+      tags:
+      - Currency
+  /wallet/api/v1/transfer:
+    get:
+      description: |-
+        Gets all transfers with pagination
+
+        Query Parameters
+        -----------
+        - `page` **(optional)**: Page number/window to query for (defaults to 0 for the first page).
+        - `page_size` **(optional)**: Size of the page returned (defaults to 1, maximum size = 1000 records).
+        - `symbol` **(optional)**: Name of currency to filter on (e.g. BTC).
+        - `external` **(optional)**: Filter on internal or external transfer, if null, returns all records.
+        - `origin_uid` **(optional)**: Filter on the UID of the sender/origin account (only applicable to peer-to-peer).
+        - `destination_uid` **(optional)**: Filter on the UID of the receiver/destination account (only applicable to peer-to-peer).
+        - `origin` **(optional)**: Filter on the type of the origin service/wallet.
+        - `destination` **(optional)**: Filter on the type of the destination service/wallet.
+        - `start` **(optional)**: Start date-time pagination.
+        - `end` **(optional)**: End date-time pagination.
+      operationId: Get_all_transfers_api_v1_transfer_get
+      parameters:
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          title: Currency symbol
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: origin
+        required: false
+        schema:
+          $ref: '#/components/schemas/TransferLocation'
+        style: form
+      - explode: true
+        in: query
+        name: destination
+        required: false
+        schema:
+          $ref: '#/components/schemas/TransferLocation'
+        style: form
+      - explode: true
+        in: query
+        name: external
+        required: false
+        schema:
+          title: External
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page number
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          format: date-time
+          title: Start
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          format: date-time
+          title: End
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Transfers
+      tags:
+      - Transfer
+  /wallet/api/v1/withdrawal_request:
+    get:
+      description: |-
+        Gets all withdrawal requests with pagination
+
+        Query Parameters
+        -----------
+        - `page` **(optional)**: Page number/window to query for (defaults to 0 for the first page).
+        - `page_size` **(optional)**: Size of the page returned (defaults to 1, maximum size = 1000 records).
+        - `currency_id` **(optional)**: ID of the currency to query for.
+        - `symbol` **(optional)**: Name of currency to filter on (e.g. BTC) (if currency_id not supplied).
+        - `network` **(optional)**: Name of the blockchain network to filter on (if currency_id not supplied).
+        - `status` **(optional)**: Filter on the status of the withdrawal request.
+        - `start` **(optional)**: Start date-time pagination.
+        - `end` **(optional)**: End date-time pagination.
+      operationId: Get_all_withdrawal_requests_api_v1_withdrawal_request_get
+      parameters:
+      - explode: true
+        in: query
+        name: currency_id
+        required: false
+        schema:
+          minimum: 1
+          title: Currency ID
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          title: Currency symbol
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 50
+          title: Currency network
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/WithdrawalRequestStatus'
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page number
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          format: date-time
+          title: Start
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          format: date-time
+          title: End
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/WithdrawalRequest'
+                title: Response Get All Withdrawal Requests Api V1 Withdrawal Request
+                  Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Withdrawal Requests
+      tags:
+      - Withdrawal Request
+    post:
+      description: |-
+        Create withdrawal request
+
+        Body Parameters
+        -----------
+        - `amount` **(required)**: Amount to withdraw denominated in the currency symbol.
+        - `destination` **(required)**: Address to withdraw to (bank account details for fiat, blockchain address for cryptocurrency).
+        - `currency_id` **(required)**: ID of the currency with which to withdraw (depends on desired symbol and network).
+      operationId: Create_withdrawal_request_api_v1_withdrawal_request_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseWithdrawalRequestInsert'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalRequest'
+          description: Successful Response
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Not found.
+        "405":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Method not allowed.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Create Withdrawal Request
+      tags:
+      - Withdrawal Request
+  /wallet/api/v1/withdrawal_request/{id}:
+    patch:
+      description: |-
+        Cancel withdrawal request
+
+        Query Parameters
+        -----------
+        - `id` **(required)**: ID of the withdrawal request to cancel.
+      operationId: Cancel_withdrawal_request_api_v1_withdrawal_request__id__patch
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          minimum: 1
+          title: Id
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Not found.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Cancel Withdrawal Request
+      tags:
+      - Withdrawal Request
+  /wallet/api/v1/deposit_address/{symbol}:
+    get:
+      description: |-
+        Gets all deposit addresses for symbol
+
+        Query Parameters
+        -----------
+        - `symbol` **(optional)**: Name of currency to filter on (e.g. BTC).
+      operationId: Get_all_deposit_addresses_for_symbol_api_v1_deposit_address__symbol__get
+      parameters:
+      - explode: false
+        in: path
+        name: symbol
+        required: true
+        schema:
+          title: Currency symbol
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositAddresses'
+          description: Successful Response
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Not found.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Deposit Addresses For Symbol
+      tags:
+      - Deposit Address
+  /trading/api/v1/pair:
+    get:
+      description: |-
+        Get the quote lifetime and other details of all available currency pairs for trading.
+
+        Query Parameters
+        -----------
+        - `base_currency` **(optional)**: Filter by a particular base currency.
+        - `quote_currency` **(optional)**: Filter by a particular quote currency.
+        - `is_active` **(optional)**: Filter by whether a currency pair is active or not.
+        - `page` **(optional)**: Page pagination (defaults to 0).
+        - `page_size` **(optional)**: Page size pagination (defaults to 1).
+      operationId: Get_All_Trading_Pairs_api_v1_pair_get
+      parameters:
+      - explode: true
+        in: query
+        name: base_currency
+        required: false
+        schema:
+          title: Base Currency
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: quote_currency
+        required: false
+        schema:
+          title: Quote Currency
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: is_active
+        required: false
+        schema:
+          title: Is Active
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page Size
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PairInfo'
+                title: Response Get All Trading Pairs Api V1 Pair Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get All Trading Pairs
+      tags:
+      - Trading Pair Info
+  /trading/api/v1/trade:
+    get:
+      description: |-
+        Gets trade history of user.
+
+        Query Parameters
+        -----------
+        - `base_currency` **(optional)**: Filter trades by a particular base currency.
+        - `quote_currency` **(optional)**: Filter trades by a particular quote currency.
+        - `type` **(optional)**: Filter on type of trade - spot, pts (Post-Trade Settlement) or margin (currently unavailable).
+        - `mode` **(optional)**: Filter by the trade mode - otc (Over-The-Counter), arb (Arbitrage), rfq (Request For Quote).
+        - `start_time` **(optional)**: Set a starting datetime for the trade query range.
+        - `end_time` **(optional)**: Set an ending datetime for the trade query range.
+        - `page` **(optional)**: Page pagination (defaults to 0).
+        - `page_size` **(optional)**: Page size pagination (defaults to 1).
+      operationId: Get_All_Trades_api_v1_trade_get
+      parameters:
+      - explode: true
+        in: query
+        name: base_currency
+        required: false
+        schema:
+          title: Base Currency
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: quote_currency
+        required: false
+        schema:
+          title: Quote Currency
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          $ref: '#/components/schemas/TradeType'
+        style: form
+      - explode: true
+        in: query
+        name: mode
+        required: false
+        schema:
+          $ref: '#/components/schemas/Mode'
+        style: form
+      - explode: true
+        in: query
+        name: start_time
+        required: false
+        schema:
+          format: date-time
+          title: Start Time
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: end_time
+        required: false
+        schema:
+          format: date-time
+          title: End Time
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page Size
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_Trade_'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Trades
+      tags:
+      - View Trades
+  /trading/api/v1/trade/{id}:
+    get:
+      description: |-
+        Gets a specific trade by ID.
+
+        Query Parameters
+        -----------
+        - `id` **(optional)**: ID of the trade to query for.
+      operationId: Get_Trade_By_ID_api_v1_trade__id__get
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Trade'
+                title: Response Get Trade By Id Api V1 Trade  Id  Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Trade By Id
+      tags:
+      - View Trades
+  /trading/api/v1/rfq:
+    get:
+      description: |-
+        Get all RFQ requests with filter parameters and pagination.
+
+        Query Parameters
+        -----------
+        - `quote_status` **(optional)**: Filter by the status of the quote (either 'accepted' or 'unaccepted'). If unspecified, all quotes will be returned.
+        - `page` **(optional)**: Page number/window to query for (defaults to 0 for the first page).
+        - `page_size` **(optional)**: Size of the page returned (defaults to 1, maximum size = 1000 records).
+      operationId: Get_all_Quote_Requests_api_v1_rfq_get
+      parameters:
+      - explode: true
+        in: query
+        name: quote_status
+        required: false
+        schema:
+          $ref: '#/components/schemas/QuoteStatus'
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          minimum: 1
+          title: Page Size
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_Rfq_'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All Quote Requests
+      tags:
+      - Request for Quote
+    post:
+      description: |-
+        Request a quote to trade a in a specific currency pair or exchange two currencies.
+        The user should specify both a 'from_currency' and a 'to_currency' and only one of 'from_amount' and 'to_amount'.
+        Note that if both 'from_amount' and 'to_amount' are specified, the requested amount will default to the 'from_amount'.
+        The 'from_amount' argument should detail an amount to sell - denominated in the 'from_currency' currency.
+        The 'to_amount' argument should detail and amount to buy - denominated in the 'to_currency' currency.
+
+        Body Parameters
+        -----------
+        - `from_amount` **(optional)**: An amount to sell - denominated in 'from_currency'
+        - `from_currency` **(required)**: A currency to trade out of.
+        - `to_amount` **(optional)**: An amount to buy - denominated in 'to_currency'
+        - `to_currency` **(required)**: A currency to trade into.
+      operationId: Generate_quote_api_v1_rfq_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RfqRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rfq'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Generate Quote
+      tags:
+      - Request for Quote
+  /trading/api/v1/rfq/pairs_bid_ask:
+    get:
+      description: Get bid and asks for all active rfq pairs.
+      operationId: Get_all_Tradable_Currency_Pairs_api_v1_rfq_pairs_bid_ask_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/BidAsk'
+                title: Response Get All Tradable Currency Pairs Api V1 Rfq Pairs Bid
+                  Ask Get
+                type: array
+          description: Successful Response
+      summary: Get All Tradable Currency Pairs
+      tags:
+      - Request for Quote
+  /trading/api/v1/rfq/{id}:
+    get:
+      description: |-
+        Get a specific quote
+
+        Query Parameters
+        -----------
+        - `id` **(required)**: ID of the quote to fetch. If a quote with that ID for that user does not exist, a 404 status code is returned
+      operationId: Get_Quote_Request_api_v1_rfq__id__get
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rfq'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Quote Request
+      tags:
+      - Request for Quote
+  /trading/api/v1/rfq/accept_quote/{id}:
+    post:
+      description: |-
+        Accept a generated quote by ID. Generated quotes may only be accepted within a short window of less than 10 seconds.
+        If a quote has already been accepted or has expired, a 400 status code is returned.
+
+        Body Parameters
+        -----------
+        - `id` **(required)**: ID of the quote to be accepted.
+      operationId: accept_quote_api_v1_rfq_accept_quote__id__post
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rfq'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Accept Quote
+      tags:
+      - Request for Quote
+  /markets/api/v1/rates/latest:
+    get:
+      description: |-
+        Read the latest rate from the database.
+
+        Query Parameters
+        -----------
+        - `base` **(optional)**: Base symbol of the pair.
+
+        - `quote` **(optional)**: Quote symbol of the pair.
+
+        - `symbol` **(optional)**: Symbol for the pair for the selected exchange.
+
+        - `exchange` **(optional)**: Name of exchange.
+
+        - `start` **(optional)**: Start timestamp (most recent rate after this timestamp will be returned).
+      operationId: read_latest_api_v1_rates_latest_get
+      parameters:
+      - explode: true
+        in: query
+        name: base
+        required: false
+        schema:
+          title: Base
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: quote
+        required: false
+        schema:
+          title: Quote
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          title: Symbol
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: exchange
+        required: false
+        schema:
+          $ref: '#/components/schemas/Exchange'
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          title: Start
+          type: number
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  items: {}
+                  type: array
+                title: Response Read Latest Api V1 Rates Latest Get
+                type: object
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Read Latest
+      tags:
+      - Rates
+  /markets/api/v1/rates/stream/latest:
+    get:
+      operationId: stream_latest_api_v1_rates_stream_latest_get
+      parameters:
+      - explode: true
+        in: query
+        name: base
+        required: true
+        schema:
+          title: Base
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: quote
+        required: true
+        schema:
+          title: Quote
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: exchange
+        required: true
+        schema:
+          title: Exchange
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketRate'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Stream Latest
+      tags:
+      - Rates
+  /payments/api/v1/charge:
+    get:
+      description: Get all active or complete charges.
+      operationId: get_all_api_v1_charge_get
+      parameters:
+      - explode: true
+        in: query
+        name: order_currency_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/ChargeStatus'
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          title: Page Size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: transaction_currency_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: transaction_status
+        required: false
+        schema:
+          $ref: '#/components/schemas/TransactionStatus'
+        style: form
+      - explode: true
+        in: query
+        name: transaction_hash
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          format: date-time
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          format: date-time
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ChargeResponse_'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All
+      tags:
+      - Charge
+    post:
+      description: Create a new charge.
+      operationId: create_api_v1_charge_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargeData'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Create
+      tags:
+      - Charge
+  /payments/api/v1/charge/{id}:
+    get:
+      description: Get one charge associated with a specific charge ID or order ID.
+      operationId: get_one_api_v1_charge__id__get
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargeResponse'
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get One
+      tags:
+      - Charge
+    patch:
+      description: Delete an active charge by supplying a charge ID or order ID.
+      operationId: deactivate_api_v1_charge__id__patch
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id_1'
+        style: simple
+      responses:
+        "204":
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Deactivate
+      tags:
+      - Charge
+  /payments/api/v1/currency:
+    get:
+      description: Get all supported currency information.
+      operationId: get_all_api_v1_currency_get
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          title: Page Size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: fiat
+        required: false
+        schema:
+          nullable: true
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: defaults_only
+        required: false
+        schema:
+          nullable: true
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CurrencyResponse'
+                title: Response Get All Api V1 Currency Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All
+      tags:
+      - Currency
+  /payments/api/v1/currency/symbols:
+    get:
+      description: Get all supported symbols.
+      operationId: symbols_api_v1_currency_symbols_get
+      parameters:
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: fiat
+        required: false
+        schema:
+          nullable: true
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                title: Response Symbols Api V1 Currency Symbols Get
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Symbols
+      tags:
+      - Currency
+  /payments/api/v1/currency/{id}:
+    get:
+      description: Get all supported currency information
+      operationId: get_api_v1_currency__id__get
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get
+      tags:
+      - Currency
+  /payments/api/v1/transaction:
+    get:
+      description: Get all transactions.
+      operationId: get_all_api_v1_transaction_get
+      parameters:
+      - explode: true
+        in: query
+        name: charge_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: currency_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          $ref: '#/components/schemas/TransactionStatus'
+        style: form
+      - explode: true
+        in: query
+        name: late
+        required: false
+        schema:
+          nullable: true
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          title: Page
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 1
+          maximum: 1000
+          title: Page Size
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          format: date-time
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: end
+        required: false
+        schema:
+          format: date-time
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_TransactionResponse_'
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get All
+      tags:
+      - Transaction
+    post:
+      description: Create a transaction for a given charge.
+      operationId: create_api_v1_transaction_post
+      parameters:
+      - explode: true
+        in: query
+        name: charge_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: currency_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Create
+      tags:
+      - Transaction
+    put:
+      description: Get one pending transaction associated with a specific transaction_id
+        or charge_id.
+      operationId: get_or_update_api_v1_transaction_put
+      parameters:
+      - explode: true
+        in: query
+        name: transaction_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: charge_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: symbol
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: network
+        required: false
+        schema:
+          maxLength: 10
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: currency_id
+        required: false
+        schema:
+          format: uuid
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Or Update
+      tags:
+      - Transaction
+  /payments/api/v1/transaction/{transaction_id}:
+    get:
+      description: Get one pending transaction associated with a specific transaction_id
+        or charge_id.
+      operationId: get_one_api_v1_transaction__transaction_id__get
+      parameters:
+      - explode: false
+        in: path
+        name: transaction_id
+        required: true
+        schema:
+          format: uuid
+          title: Transaction Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+          description: Successful Response
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPResponse'
+          description: Bad request.
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get One
+      tags:
+      - Transaction
+components:
+  schemas:
+    HTTPValidationError:
+      example:
+        detail:
+        - msg: msg
+          loc:
+          - Location_inner
+          - Location_inner
+          type: type
+        - msg: msg
+          loc:
+          - Location_inner
+          - Location_inner
+          type: type
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    OAuth2ClientCredentialsRequestForm:
+      example:
+        secret: secret
+        key: key
+      properties:
+        key:
+          title: Key
+          type: string
+        secret:
+          title: Secret
+          type: string
+      required:
+      - key
+      - secret
+      title: OAuth2ClientCredentialsRequestForm
+      type: object
+    Token:
+      example:
+        access_token: access_token
+        token_type: token_type
+      properties:
+        access_token:
+          title: Access Token
+          type: string
+        token_type:
+          title: Token Type
+          type: string
+      required:
+      - access_token
+      - token_type
+      title: Token
+      type: object
+    ValidationError:
+      example:
+        msg: msg
+        loc:
+        - Location_inner
+        - Location_inner
+        type: type
+      properties:
+        loc:
+          items:
+            $ref: '#/components/schemas/Location_inner'
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+    Balance:
+      example:
+        uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        symbol: symbol
+        wallet:
+          uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          updated_by: updated_by
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        updated_by: updated_by
+        id: 0
+        free: 6.027456183070403
+        locked: 0.14658129805029452
+      properties:
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+        updated_by:
+          title: Updated By
+          type: string
+        id:
+          title: Id
+          type: integer
+        uid:
+          format: uuid
+          title: Uid
+          type: string
+        symbol:
+          title: Symbol
+          type: string
+        free:
+          default: 0
+          title: Free
+          type: number
+        locked:
+          default: 0
+          minimum: 0
+          title: Locked
+          type: number
+        wallet:
+          $ref: '#/components/schemas/Wallet'
+      required:
+      - id
+      - symbol
+      - uid
+      - wallet
+      title: Balance
+      type: object
+    BaseWithdrawalRequestInsert:
+      example:
+        amount: 0.8008281904610115
+        destination:
+          bank: bank
+          address: address
+          type: type
+          accountNumber: accountNumber
+        currency_id: 6
+      properties:
+        amount:
+          title: Amount
+          type: number
+        destination:
+          $ref: '#/components/schemas/Destination'
+        currency_id:
+          title: Currency Id
+          type: integer
+      required:
+      - amount
+      - currency_id
+      - destination
+      title: BaseWithdrawalRequestInsert
+      type: object
+    Currency:
+      example:
+        symbol: symbol
+        active: false
+        scale: 5
+        min_withdraw: 0.5962133916683182
+        network: network
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        deposits_enabled: true
+        meta:
+          key: Meta
+        withdrawals_enabled: true
+        max_withdraw: 1.4658129805029452
+        updated_by: updated_by
+        fiat: false
+        id: 0
+        withdrawal_fee: 0.6027456183070403
+      properties:
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+        updated_by:
+          title: Updated By
+          type: string
+        id:
+          title: Id
+          type: integer
+        symbol:
+          title: Symbol
+          type: string
+        network:
+          title: Network
+          type: string
+        deposits_enabled:
+          default: true
+          title: Deposits Enabled
+          type: boolean
+        withdrawals_enabled:
+          default: true
+          title: Withdrawals Enabled
+          type: boolean
+        withdrawal_fee:
+          default: 0
+          minimum: 0
+          title: Withdrawal Fee
+          type: number
+        max_withdraw:
+          title: Max Withdraw
+          type: number
+        min_withdraw:
+          default: 0
+          minimum: 0
+          title: Min Withdraw
+          type: number
+        meta:
+          additionalProperties:
+            $ref: '#/components/schemas/Meta'
+          default: {}
+          title: Meta
+          type: object
+        active:
+          default: false
+          title: Active
+          type: boolean
+        fiat:
+          default: false
+          title: Fiat
+          type: boolean
+        scale:
+          default: 8
+          title: Scale
+          type: integer
+      required:
+      - id
+      - symbol
+      title: Currency
+      type: object
+    DepositAddresses:
+      example:
+        symbol: symbol
+        network_addresses:
+        - symbol: symbol
+          address: address
+          active: false
+          scale: 7
+          min_withdraw: 0.23021358869347652
+          network: network
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          deposits_enabled: true
+          meta:
+            key: Meta
+          withdrawals_enabled: true
+          max_withdraw: 5.637376656633329
+          updated_by: updated_by
+          fiat: false
+          id: 1
+          withdrawal_fee: 0.5962133916683182
+        - symbol: symbol
+          address: address
+          active: false
+          scale: 7
+          min_withdraw: 0.23021358869347652
+          network: network
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          deposits_enabled: true
+          meta:
+            key: Meta
+          withdrawals_enabled: true
+          max_withdraw: 5.637376656633329
+          updated_by: updated_by
+          fiat: false
+          id: 1
+          withdrawal_fee: 0.5962133916683182
+        free: 0.8008281904610115
+        locked: 0.6027456183070403
+      properties:
+        symbol:
+          title: Symbol
+          type: string
+        free:
+          default: 0
+          title: Free
+          type: number
+        locked:
+          default: 0
+          minimum: 0
+          title: Locked
+          type: number
+        network_addresses:
+          items:
+            $ref: '#/components/schemas/NetworkAddress'
+          title: Network Addresses
+          type: array
+      required:
+      - network_addresses
+      - symbol
+      title: DepositAddresses
+      type: object
+    Destination:
+      example:
+        bank: bank
+        address: address
+        type: type
+        accountNumber: accountNumber
+      properties:
+        address:
+          title: Address
+          type: string
+        bank:
+          title: Bank
+          type: string
+        type:
+          title: Type
+          type: string
+        accountNumber:
+          title: Accountnumber
+          type: string
+      title: Destination
+      type: object
+    HTTPResponse:
+      example:
+        headers: "{}"
+        status_code: 0
+        detail: detail
+      properties:
+        detail:
+          title: Detail
+          type: string
+        status_code:
+          title: Status Code
+          type: integer
+        headers:
+          title: Headers
+          type: object
+      required:
+      - detail
+      - headers
+      - status_code
+      title: HTTPResponse
+      type: object
+    NetworkAddress:
+      example:
+        symbol: symbol
+        address: address
+        active: false
+        scale: 7
+        min_withdraw: 0.23021358869347652
+        network: network
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        deposits_enabled: true
+        meta:
+          key: Meta
+        withdrawals_enabled: true
+        max_withdraw: 5.637376656633329
+        updated_by: updated_by
+        fiat: false
+        id: 1
+        withdrawal_fee: 0.5962133916683182
+      properties:
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+        updated_by:
+          title: Updated By
+          type: string
+        id:
+          title: Id
+          type: integer
+        symbol:
+          title: Symbol
+          type: string
+        network:
+          title: Network
+          type: string
+        deposits_enabled:
+          default: true
+          title: Deposits Enabled
+          type: boolean
+        withdrawals_enabled:
+          default: true
+          title: Withdrawals Enabled
+          type: boolean
+        withdrawal_fee:
+          default: 0
+          minimum: 0
+          title: Withdrawal Fee
+          type: number
+        max_withdraw:
+          title: Max Withdraw
+          type: number
+        min_withdraw:
+          default: 0
+          minimum: 0
+          title: Min Withdraw
+          type: number
+        meta:
+          additionalProperties:
+            $ref: '#/components/schemas/Meta'
+          default: {}
+          title: Meta
+          type: object
+        active:
+          default: false
+          title: Active
+          type: boolean
+        fiat:
+          default: false
+          title: Fiat
+          type: boolean
+        scale:
+          default: 8
+          title: Scale
+          type: integer
+        address:
+          title: Address
+          type: string
+      required:
+      - address
+      - id
+      - symbol
+      title: NetworkAddress
+      type: object
+    Page:
+      example:
+        total: 0
+        pages: 6
+        has_next: false
+        has_prev: false
+        items:
+        - ""
+        - ""
+        page_size: 1
+      properties:
+        items:
+          items: {}
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+        pages:
+          title: Pages
+          type: integer
+        page_size:
+          title: Page Size
+          type: integer
+        has_next:
+          default: false
+          title: Has Next
+          type: boolean
+        has_prev:
+          default: false
+          title: Has Prev
+          type: boolean
+      required:
+      - items
+      - page_size
+      - pages
+      - total
+      title: Page
+      type: object
+    TransferLocation:
+      description: An enumeration.
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      title: TransferLocation
+      type: integer
+    Wallet:
+      example:
+        uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        updated_by: updated_by
+      properties:
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+        updated_by:
+          title: Updated By
+          type: string
+        uid:
+          format: uuid
+          title: Uid
+          type: string
+      required:
+      - uid
+      title: Wallet
+      type: object
+    WithdrawalRequest:
+      example:
+        reference: reference
+        uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        amount: 5.962133916683182
+        wallet:
+          uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          updated_by: updated_by
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        updated_by: updated_by
+        destination:
+          bank: bank
+          address: address
+          type: type
+          accountNumber: accountNumber
+        currency:
+          symbol: symbol
+          active: false
+          scale: 5
+          min_withdraw: 0.5962133916683182
+          network: network
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          deposits_enabled: true
+          meta:
+            key: Meta
+          withdrawals_enabled: true
+          max_withdraw: 1.4658129805029452
+          updated_by: updated_by
+          fiat: false
+          id: 0
+          withdrawal_fee: 0.6027456183070403
+        id: 0
+        transfer_id: 1
+        currency_id: 6
+        status: ""
+      properties:
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+        updated_by:
+          title: Updated By
+          type: string
+        id:
+          title: Id
+          type: integer
+        currency:
+          $ref: '#/components/schemas/Currency'
+        currency_id:
+          title: Currency Id
+          type: integer
+        transfer_id:
+          title: Transfer Id
+          type: integer
+        uid:
+          format: uuid
+          title: Uid
+          type: string
+        amount:
+          title: Amount
+          type: number
+        status:
+          allOf:
+          - $ref: '#/components/schemas/WithdrawalRequestStatus'
+          default: 0
+        destination:
+          $ref: '#/components/schemas/Destination'
+        wallet:
+          $ref: '#/components/schemas/Wallet'
+        reference:
+          title: Reference
+          type: string
+      required:
+      - amount
+      - currency
+      - currency_id
+      - destination
+      - id
+      - uid
+      - wallet
+      title: WithdrawalRequest
+      type: object
+    WithdrawalRequestStatus:
+      description: An enumeration.
+      enum:
+      - 0
+      - 1
+      - 2
+      title: WithdrawalRequestStatus
+      type: integer
+    BidAsk:
+      example:
+        base_currency: base_currency
+        ask: 0.6027456183070403
+        bid: 0.08008281904610115
+        quote_currency: quote_currency
+      properties:
+        base_currency:
+          title: Base Currency
+          type: string
+        quote_currency:
+          title: Quote Currency
+          type: string
+        bid:
+          minimum: 0
+          title: Bid
+          type: number
+        ask:
+          minimum: 0
+          title: Ask
+          type: number
+      required:
+      - ask
+      - base_currency
+      - bid
+      - quote_currency
+      title: BidAsk
+      type: object
+    Mode:
+      description: An enumeration.
+      enum:
+      - otc
+      - arb
+      - rfq
+      - exchange
+      - payment
+      - bot
+      title: Mode
+      type: string
+    Page_Rfq_:
+      example:
+        total: 5
+        pages: 2
+        size: 7
+        has_next: false
+        has_prev: false
+        items:
+        - quote_amount: 0.14658129805029452
+          uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          quote_lifetime_seconds: 5
+          side: buy
+          trade_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          rate: 0.08008281904610115
+          base_amount: 0.6027456183070403
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          pair_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          pair:
+            base_currency: base_currency
+            quote_currency: quote_currency
+          status: accepted
+        - quote_amount: 0.14658129805029452
+          uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          quote_lifetime_seconds: 5
+          side: buy
+          trade_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          rate: 0.08008281904610115
+          base_amount: 0.6027456183070403
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          pair_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          pair:
+            base_currency: base_currency
+            quote_currency: quote_currency
+          status: accepted
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Rfq'
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+        pages:
+          title: Pages
+          type: integer
+        size:
+          title: Size
+          type: integer
+        has_next:
+          default: false
+          title: Has Next
+          type: boolean
+        has_prev:
+          default: false
+          title: Has Prev
+          type: boolean
+      required:
+      - items
+      - pages
+      - total
+      title: "Page[Rfq]"
+      type: object
+    Page_Trade_:
+      example:
+        total: 5
+        pages: 2
+        size: 7
+        has_next: false
+        has_prev: false
+        items:
+        - base_currency: base_currency
+          side: buy
+          exchange_trade_id: exchange_trade_id
+          created_at: 2000-01-23T04:56:07.000+00:00
+          type: pts
+          exchange_account_id: 0
+          quote_currency: quote_currency
+          quote_amount: 5.962133916683182
+          mode: otc
+          uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          rate: 6.027456183070403
+          base_amount: 1.4658129805029452
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          confirmed_at: 2000-01-23T04:56:07.000+00:00
+        - base_currency: base_currency
+          side: buy
+          exchange_trade_id: exchange_trade_id
+          created_at: 2000-01-23T04:56:07.000+00:00
+          type: pts
+          exchange_account_id: 0
+          quote_currency: quote_currency
+          quote_amount: 5.962133916683182
+          mode: otc
+          uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          rate: 6.027456183070403
+          base_amount: 1.4658129805029452
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          confirmed_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Trade'
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+        pages:
+          title: Pages
+          type: integer
+        size:
+          title: Size
+          type: integer
+        has_next:
+          default: false
+          title: Has Next
+          type: boolean
+        has_prev:
+          default: false
+          title: Has Prev
+          type: boolean
+      required:
+      - items
+      - pages
+      - total
+      title: "Page[Trade]"
+      type: object
+    PairBaseClient:
+      example:
+        base_currency: base_currency
+        quote_currency: quote_currency
+      properties:
+        base_currency:
+          title: Base Currency
+          type: string
+        quote_currency:
+          title: Quote Currency
+          type: string
+      required:
+      - base_currency
+      - quote_currency
+      title: PairBaseClient
+      type: object
+    PairInfo:
+      example:
+        base_currency: base_currency
+        quote_lifetime_seconds: 5
+        is_active: true
+        min_size_quote_amount: 0.08008281904610115
+        quote_currency: quote_currency
+        max_size_quote_amount: 0.6027456183070403
+        rfq_daily_limit_quote_amount: 0.14658129805029452
+      properties:
+        base_currency:
+          title: Base Currency
+          type: string
+        quote_currency:
+          title: Quote Currency
+          type: string
+        min_size_quote_amount:
+          minimum: 0
+          title: Min Size Quote Amount
+          type: number
+        max_size_quote_amount:
+          minimum: 0
+          title: Max Size Quote Amount
+          type: number
+        rfq_daily_limit_quote_amount:
+          minimum: 0
+          title: Rfq Daily Limit Quote Amount
+          type: number
+        is_active:
+          title: Is Active
+          type: boolean
+        quote_lifetime_seconds:
+          title: Quote Lifetime Seconds
+          type: integer
+      required:
+      - base_currency
+      - is_active
+      - max_size_quote_amount
+      - min_size_quote_amount
+      - quote_currency
+      - quote_lifetime_seconds
+      - rfq_daily_limit_quote_amount
+      title: PairInfo
+      type: object
+    QuoteStatus:
+      description: An enumeration.
+      enum:
+      - accepted
+      - unaccepted
+      title: QuoteStatus
+      type: string
+    Rfq:
+      example:
+        quote_amount: 0.14658129805029452
+        uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        quote_lifetime_seconds: 5
+        side: buy
+        trade_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        rate: 0.08008281904610115
+        base_amount: 0.6027456183070403
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        pair_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        pair:
+          base_currency: base_currency
+          quote_currency: quote_currency
+        status: accepted
+      properties:
+        uid:
+          format: uuid
+          title: Uid
+          type: string
+        rate:
+          minimum: 0
+          title: Rate
+          type: number
+        trade_id:
+          format: uuid
+          title: Trade Id
+          type: string
+        pair_id:
+          format: uuid
+          title: Pair Id
+          type: string
+        pair:
+          $ref: '#/components/schemas/PairBaseClient'
+        base_amount:
+          minimum: 0
+          title: Base Amount
+          type: number
+        quote_amount:
+          minimum: 0
+          title: Quote Amount
+          type: number
+        side:
+          $ref: '#/components/schemas/TradeSide'
+        status:
+          $ref: '#/components/schemas/QuoteStatus'
+        quote_lifetime_seconds:
+          title: Quote Lifetime Seconds
+          type: integer
+        id:
+          format: uuid
+          title: Id
+          type: string
+        created_at:
+          format: date-time
+          title: Created At
+          type: string
+      required:
+      - base_amount
+      - created_at
+      - id
+      - pair
+      - quote_amount
+      - quote_lifetime_seconds
+      - rate
+      - side
+      - status
+      - uid
+      title: Rfq
+      type: object
+    RfqRequest:
+      example:
+        to_amount: 0.6027456183070403
+        from_currency: from_currency
+        from_amount: 0.08008281904610115
+        to_currency: to_currency
+      properties:
+        from_amount:
+          minimum: 0
+          title: From Amount
+          type: number
+        to_amount:
+          minimum: 0
+          title: To Amount
+          type: number
+        from_currency:
+          title: From Currency
+          type: string
+        to_currency:
+          title: To Currency
+          type: string
+      required:
+      - from_currency
+      - to_currency
+      title: RfqRequest
+      type: object
+    Trade:
+      example:
+        base_currency: base_currency
+        side: buy
+        exchange_trade_id: exchange_trade_id
+        created_at: 2000-01-23T04:56:07.000+00:00
+        type: pts
+        exchange_account_id: 0
+        quote_currency: quote_currency
+        quote_amount: 5.962133916683182
+        mode: otc
+        uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        rate: 6.027456183070403
+        base_amount: 1.4658129805029452
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        confirmed_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        uid:
+          format: uuid
+          title: Uid
+          type: string
+        exchange_account_id:
+          title: Exchange Account Id
+          type: integer
+        exchange_trade_id:
+          title: Exchange Trade Id
+          type: string
+        base_currency:
+          title: Base Currency
+          type: string
+        quote_currency:
+          title: Quote Currency
+          type: string
+        rate:
+          title: Rate
+          type: number
+        base_amount:
+          title: Base Amount
+          type: number
+        quote_amount:
+          title: Quote Amount
+          type: number
+        side:
+          $ref: '#/components/schemas/TradeSide'
+        mode:
+          $ref: '#/components/schemas/Mode'
+        type:
+          $ref: '#/components/schemas/TradeType'
+        confirmed_at:
+          format: date-time
+          title: Confirmed At
+          type: string
+        id:
+          format: uuid
+          title: Id
+          type: string
+        created_at:
+          format: date-time
+          title: Created At
+          type: string
+      required:
+      - base_amount
+      - base_currency
+      - created_at
+      - id
+      - mode
+      - quote_amount
+      - quote_currency
+      - rate
+      - side
+      title: Trade
+      type: object
+    TradeSide:
+      description: An enumeration.
+      enum:
+      - buy
+      - sell
+      title: TradeSide
+      type: string
+    TradeType:
+      description: An enumeration.
+      enum:
+      - pts
+      - margin
+      - spot
+      title: TradeType
+      type: string
+    Exchange:
+      description: An enumeration.
+      enum:
+      - ftx
+      - binance
+      - luno
+      - valr
+      - ovex
+      - alpha-vantage
+      title: Exchange
+      type: string
+    MarketRate:
+      example:
+        quote: quote
+        generated_at: 2000-01-23T04:56:07.000+00:00
+        ask: 6.027456183070403
+        exchange: exchange
+        bid: 0.8008281904610115
+        base: base
+      properties:
+        base:
+          title: Base
+          type: string
+        quote:
+          title: Quote
+          type: string
+        exchange:
+          title: Exchange
+          type: string
+        bid:
+          title: Bid
+          type: number
+        ask:
+          title: Ask
+          type: number
+        generated_at:
+          format: date-time
+          title: Generated At
+          type: string
+      required:
+      - ask
+      - base
+      - bid
+      - exchange
+      - generated_at
+      - quote
+      title: MarketRate
+      type: object
+    Buyer:
+      example:
+        buyer_email: buyer_email
+        buyer_phone_country_code: buyer_phone_country_code
+        buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+        buyer_browser_language: buyer_browser_language
+        buyer_name:
+          last_name: last_name
+          middle_name: middle_name
+          first_name: first_name
+        buyer_phone_no: buyer_phone_no
+        reference_buyer_id: reference_buyer_id
+      properties:
+        reference_buyer_id:
+          nullable: true
+          type: string
+        buyer_name:
+          $ref: '#/components/schemas/Name'
+        buyer_phone_country_code:
+          nullable: true
+          type: string
+        buyer_phone_no:
+          format: phone
+          maxLength: 64
+          minLength: 7
+          nullable: true
+          type: string
+        buyer_email:
+          format: email
+          nullable: true
+          type: string
+        buyer_registration_time:
+          format: date-time
+          nullable: true
+          type: string
+        buyer_browser_language:
+          nullable: true
+          type: string
+      title: Buyer
+      type: object
+    ChargeData:
+      example:
+        sub_merchant_uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        symbol: symbol
+        meta:
+          shipping:
+            shipping_phone_no: shipping_phone_no
+            shipping_address:
+              address: address
+              city: city
+              shipping_address_type: "01"
+              state: state
+              region: region
+              zip_code: zip_code
+            shipping_name:
+              last_name: last_name
+              middle_name: middle_name
+              first_name: first_name
+          goods_details:
+          - goods_name: goods_name
+            goods_unit_amount:
+              amount: 0.6027456183070403
+              currency: currency
+            goods_category: "0000"
+            reference_goods_id: reference_goods_id
+            goods_type: "01"
+            goods_detail: goods_detail
+          - goods_name: goods_name
+            goods_unit_amount:
+              amount: 0.6027456183070403
+              currency: currency
+            goods_category: "0000"
+            reference_goods_id: reference_goods_id
+            goods_type: "01"
+            goods_detail: goods_detail
+          description: Miscellaneous
+          buyer:
+            buyer_email: buyer_email
+            buyer_phone_country_code: buyer_phone_country_code
+            buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+            buyer_browser_language: buyer_browser_language
+            buyer_name:
+              last_name: last_name
+              middle_name: middle_name
+              first_name: first_name
+            buyer_phone_no: buyer_phone_no
+            reference_buyer_id: reference_buyer_id
+        order_currency_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        order_amount: 0.08008281904610115
+        order_id: order_id
+      properties:
+        sub_merchant_uid:
+          format: uuid
+          nullable: true
+          type: string
+        order_amount:
+          $ref: '#/components/schemas/Order_Amount'
+        order_id:
+          maxLength: 36
+          title: Order Id
+          type: string
+        meta:
+          $ref: '#/components/schemas/ChargeMeta-Input'
+        order_currency_id:
+          format: uuid
+          nullable: true
+          type: string
+        symbol:
+          maxLength: 10
+          nullable: true
+          type: string
+      required:
+      - order_amount
+      title: ChargeData
+      type: object
+    ChargeMeta-Input:
+      additionalProperties: true
+      example:
+        shipping:
+          shipping_phone_no: shipping_phone_no
+          shipping_address:
+            address: address
+            city: city
+            shipping_address_type: "01"
+            state: state
+            region: region
+            zip_code: zip_code
+          shipping_name:
+            last_name: last_name
+            middle_name: middle_name
+            first_name: first_name
+        goods_details:
+        - goods_name: goods_name
+          goods_unit_amount:
+            amount: 0.6027456183070403
+            currency: currency
+          goods_category: "0000"
+          reference_goods_id: reference_goods_id
+          goods_type: "01"
+          goods_detail: goods_detail
+        - goods_name: goods_name
+          goods_unit_amount:
+            amount: 0.6027456183070403
+            currency: currency
+          goods_category: "0000"
+          reference_goods_id: reference_goods_id
+          goods_type: "01"
+          goods_detail: goods_detail
+        description: Miscellaneous
+        buyer:
+          buyer_email: buyer_email
+          buyer_phone_country_code: buyer_phone_country_code
+          buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+          buyer_browser_language: buyer_browser_language
+          buyer_name:
+            last_name: last_name
+            middle_name: middle_name
+            first_name: first_name
+          buyer_phone_no: buyer_phone_no
+          reference_buyer_id: reference_buyer_id
+      properties:
+        goods_details:
+          default:
+          - goods_type: "01"
+            goods_category: Z000
+            reference_goods_id: 5e1fc69a-a4d7-44f6-89f0-8a5952bc8d0e
+            goods_name: ""
+          items:
+            $ref: '#/components/schemas/Goods-Input'
+          title: Goods Details
+          type: array
+        shipping:
+          $ref: '#/components/schemas/Shipping-Input'
+        buyer:
+          $ref: '#/components/schemas/Buyer'
+        description:
+          default: Miscellaneous
+          maxLength: 256
+          title: Description
+          type: string
+      title: ChargeMeta
+      type: object
+    ChargeMeta-Output:
+      additionalProperties: true
+      example:
+        shipping:
+          shipping_phone_no: shipping_phone_no
+          shipping_address:
+            address: address
+            city: city
+            shipping_address_type: "01"
+            state: state
+            region: region
+            zip_code: zip_code
+          shipping_name:
+            last_name: last_name
+            middle_name: middle_name
+            first_name: first_name
+        goods_details:
+        - goods_name: goods_name
+          goods_unit_amount:
+            amount: amount
+            currency: currency
+          goods_category: "0000"
+          reference_goods_id: reference_goods_id
+          goods_type: "01"
+          goods_detail: goods_detail
+        - goods_name: goods_name
+          goods_unit_amount:
+            amount: amount
+            currency: currency
+          goods_category: "0000"
+          reference_goods_id: reference_goods_id
+          goods_type: "01"
+          goods_detail: goods_detail
+        description: Miscellaneous
+        buyer:
+          buyer_email: buyer_email
+          buyer_phone_country_code: buyer_phone_country_code
+          buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+          buyer_browser_language: buyer_browser_language
+          buyer_name:
+            last_name: last_name
+            middle_name: middle_name
+            first_name: first_name
+          buyer_phone_no: buyer_phone_no
+          reference_buyer_id: reference_buyer_id
+      properties:
+        goods_details:
+          default:
+          - goods_type: "01"
+            goods_category: Z000
+            reference_goods_id: 5e1fc69a-a4d7-44f6-89f0-8a5952bc8d0e
+            goods_name: ""
+          items:
+            $ref: '#/components/schemas/Goods-Output'
+          title: Goods Details
+          type: array
+        shipping:
+          $ref: '#/components/schemas/Shipping-Output'
+        buyer:
+          $ref: '#/components/schemas/Buyer'
+        description:
+          default: Miscellaneous
+          maxLength: 256
+          title: Description
+          type: string
+      title: ChargeMeta
+      type: object
+    ChargeResponse:
+      example:
+        sub_merchant_uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        order_currency:
+          symbol: symbol
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          meta: "{}"
+          fiat: false
+          scale: 6
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          expiry_delta: 0
+          network: network
+        meta:
+          shipping:
+            shipping_phone_no: shipping_phone_no
+            shipping_address:
+              address: address
+              city: city
+              shipping_address_type: "01"
+              state: state
+              region: region
+              zip_code: zip_code
+            shipping_name:
+              last_name: last_name
+              middle_name: middle_name
+              first_name: first_name
+          goods_details:
+          - goods_name: goods_name
+            goods_unit_amount:
+              amount: amount
+              currency: currency
+            goods_category: "0000"
+            reference_goods_id: reference_goods_id
+            goods_type: "01"
+            goods_detail: goods_detail
+          - goods_name: goods_name
+            goods_unit_amount:
+              amount: amount
+              currency: currency
+            goods_category: "0000"
+            reference_goods_id: reference_goods_id
+            goods_type: "01"
+            goods_detail: goods_detail
+          description: Miscellaneous
+          buyer:
+            buyer_email: buyer_email
+            buyer_phone_country_code: buyer_phone_country_code
+            buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+            buyer_browser_language: buyer_browser_language
+            buyer_name:
+              last_name: last_name
+              middle_name: middle_name
+              first_name: first_name
+            buyer_phone_no: buyer_phone_no
+            reference_buyer_id: reference_buyer_id
+        order_amount: order_amount
+        fee: fee
+        settlement_amount: settlement_amount
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        order_id: order_id
+        status: ""
+      properties:
+        updated_at:
+          format: date-time
+          nullable: true
+          type: string
+        id:
+          format: uuid
+          title: Id
+          type: string
+        sub_merchant_uid:
+          format: uuid
+          nullable: true
+          type: string
+        order_id:
+          maxLength: 36
+          title: Order Id
+          type: string
+        order_amount:
+          title: Order Amount
+          type: string
+        order_currency:
+          $ref: '#/components/schemas/CurrencyResponse'
+        fee:
+          title: Fee
+          type: string
+        meta:
+          $ref: '#/components/schemas/ChargeMeta-Output'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ChargeStatus'
+          default: active
+        settlement_amount:
+          nullable: true
+          type: string
+      required:
+      - fee
+      - id
+      - order_amount
+      - order_currency
+      - order_id
+      title: ChargeResponse
+      type: object
+    ChargeStatus:
+      enum:
+      - complete
+      - active
+      - inactive
+      title: ChargeStatus
+      type: string
+    CurrencyResponse:
+      example:
+        symbol: symbol
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        meta: "{}"
+        fiat: false
+        scale: 6
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        expiry_delta: 0
+        network: network
+      properties:
+        updated_at:
+          format: date-time
+          nullable: true
+          type: string
+        id:
+          format: uuid
+          title: Id
+          type: string
+        symbol:
+          maxLength: 10
+          title: Symbol
+          type: string
+        network:
+          maxLength: 10
+          title: Network
+          type: string
+        meta:
+          nullable: true
+          type: object
+        fiat:
+          default: false
+          title: Fiat
+          type: boolean
+        expiry_delta:
+          title: Expiry Delta
+          type: integer
+        scale:
+          title: Scale
+          type: integer
+      required:
+      - id
+      - network
+      - scale
+      - symbol
+      title: CurrencyResponse
+      type: object
+    DepositAddress:
+      example:
+        address: address
+        memo: memo
+      properties:
+        address:
+          title: Address
+          type: string
+        memo:
+          nullable: true
+          type: string
+      required:
+      - address
+      title: DepositAddress
+      type: object
+    Goods-Input:
+      example:
+        goods_name: goods_name
+        goods_unit_amount:
+          amount: 0.6027456183070403
+          currency: currency
+        goods_category: "0000"
+        reference_goods_id: reference_goods_id
+        goods_type: "01"
+        goods_detail: goods_detail
+      properties:
+        goods_type:
+          $ref: '#/components/schemas/GoodsType'
+        goods_category:
+          $ref: '#/components/schemas/GoodsCategory'
+        reference_goods_id:
+          maxLength: 36
+          title: Reference Goods Id
+          type: string
+        goods_name:
+          maxLength: 256
+          title: Goods Name
+          type: string
+        goods_detail:
+          maxLength: 256
+          minLength: 1
+          nullable: true
+          type: string
+        goods_unit_amount:
+          $ref: '#/components/schemas/GoodsUnitAmount-Input'
+      required:
+      - goods_category
+      - goods_name
+      - goods_type
+      title: Goods
+      type: object
+    Goods-Output:
+      example:
+        goods_name: goods_name
+        goods_unit_amount:
+          amount: amount
+          currency: currency
+        goods_category: "0000"
+        reference_goods_id: reference_goods_id
+        goods_type: "01"
+        goods_detail: goods_detail
+      properties:
+        goods_type:
+          $ref: '#/components/schemas/GoodsType'
+        goods_category:
+          $ref: '#/components/schemas/GoodsCategory'
+        reference_goods_id:
+          maxLength: 36
+          title: Reference Goods Id
+          type: string
+        goods_name:
+          maxLength: 256
+          title: Goods Name
+          type: string
+        goods_detail:
+          maxLength: 256
+          minLength: 1
+          nullable: true
+          type: string
+        goods_unit_amount:
+          $ref: '#/components/schemas/GoodsUnitAmount-Output'
+      required:
+      - goods_category
+      - goods_name
+      - goods_type
+      title: Goods
+      type: object
+    GoodsCategory:
+      enum:
+      - "0000"
+      - "1000"
+      - "2000"
+      - "3000"
+      - "4000"
+      - "5000"
+      - "6000"
+      - "7000"
+      - "8000"
+      - "9000"
+      - A000
+      - B000
+      - C000
+      - D000
+      - E000
+      - F000
+      - Z000
+      title: GoodsCategory
+      type: string
+    GoodsType:
+      enum:
+      - "01"
+      - "02"
+      title: GoodsType
+      type: string
+    GoodsUnitAmount-Input:
+      example:
+        amount: 0.6027456183070403
+        currency: currency
+      properties:
+        currency:
+          maxLength: 10
+          title: Currency
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+      required:
+      - amount
+      - currency
+      title: GoodsUnitAmount
+      type: object
+    GoodsUnitAmount-Output:
+      example:
+        amount: amount
+        currency: currency
+      properties:
+        currency:
+          maxLength: 10
+          title: Currency
+          type: string
+        amount:
+          title: Amount
+          type: string
+      required:
+      - amount
+      - currency
+      title: GoodsUnitAmount
+      type: object
+    Name:
+      example:
+        last_name: last_name
+        middle_name: middle_name
+        first_name: first_name
+      properties:
+        first_name:
+          minLength: 1
+          title: First Name
+          type: string
+        middle_name:
+          nullable: true
+          type: string
+        last_name:
+          minLength: 1
+          title: Last Name
+          type: string
+      required:
+      - first_name
+      - last_name
+      title: Name
+      type: object
+    Page_ChargeResponse_:
+      example:
+        total: 1
+        pages: 5
+        has_next: false
+        has_prev: false
+        items:
+        - sub_merchant_uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          order_currency:
+            symbol: symbol
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            meta: "{}"
+            fiat: false
+            scale: 6
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            expiry_delta: 0
+            network: network
+          meta:
+            shipping:
+              shipping_phone_no: shipping_phone_no
+              shipping_address:
+                address: address
+                city: city
+                shipping_address_type: "01"
+                state: state
+                region: region
+                zip_code: zip_code
+              shipping_name:
+                last_name: last_name
+                middle_name: middle_name
+                first_name: first_name
+            goods_details:
+            - goods_name: goods_name
+              goods_unit_amount:
+                amount: amount
+                currency: currency
+              goods_category: "0000"
+              reference_goods_id: reference_goods_id
+              goods_type: "01"
+              goods_detail: goods_detail
+            - goods_name: goods_name
+              goods_unit_amount:
+                amount: amount
+                currency: currency
+              goods_category: "0000"
+              reference_goods_id: reference_goods_id
+              goods_type: "01"
+              goods_detail: goods_detail
+            description: Miscellaneous
+            buyer:
+              buyer_email: buyer_email
+              buyer_phone_country_code: buyer_phone_country_code
+              buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+              buyer_browser_language: buyer_browser_language
+              buyer_name:
+                last_name: last_name
+                middle_name: middle_name
+                first_name: first_name
+              buyer_phone_no: buyer_phone_no
+              reference_buyer_id: reference_buyer_id
+          order_amount: order_amount
+          fee: fee
+          settlement_amount: settlement_amount
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          order_id: order_id
+          status: ""
+        - sub_merchant_uid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          order_currency:
+            symbol: symbol
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            meta: "{}"
+            fiat: false
+            scale: 6
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            expiry_delta: 0
+            network: network
+          meta:
+            shipping:
+              shipping_phone_no: shipping_phone_no
+              shipping_address:
+                address: address
+                city: city
+                shipping_address_type: "01"
+                state: state
+                region: region
+                zip_code: zip_code
+              shipping_name:
+                last_name: last_name
+                middle_name: middle_name
+                first_name: first_name
+            goods_details:
+            - goods_name: goods_name
+              goods_unit_amount:
+                amount: amount
+                currency: currency
+              goods_category: "0000"
+              reference_goods_id: reference_goods_id
+              goods_type: "01"
+              goods_detail: goods_detail
+            - goods_name: goods_name
+              goods_unit_amount:
+                amount: amount
+                currency: currency
+              goods_category: "0000"
+              reference_goods_id: reference_goods_id
+              goods_type: "01"
+              goods_detail: goods_detail
+            description: Miscellaneous
+            buyer:
+              buyer_email: buyer_email
+              buyer_phone_country_code: buyer_phone_country_code
+              buyer_registration_time: 2000-01-23T04:56:07.000+00:00
+              buyer_browser_language: buyer_browser_language
+              buyer_name:
+                last_name: last_name
+                middle_name: middle_name
+                first_name: first_name
+              buyer_phone_no: buyer_phone_no
+              reference_buyer_id: reference_buyer_id
+          order_amount: order_amount
+          fee: fee
+          settlement_amount: settlement_amount
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          order_id: order_id
+          status: ""
+        page_size: 5
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ChargeResponse'
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+        pages:
+          title: Pages
+          type: integer
+        page_size:
+          title: Page Size
+          type: integer
+        has_next:
+          default: false
+          title: Has Next
+          type: boolean
+        has_prev:
+          default: false
+          title: Has Prev
+          type: boolean
+      required:
+      - items
+      - page_size
+      - pages
+      - total
+      title: "Page[ChargeResponse]"
+      type: object
+    Page_TransactionResponse_:
+      example:
+        total: 0
+        pages: 6
+        has_next: false
+        has_prev: false
+        items:
+        - pay_instructions:
+            bpay_universal_url: https://openapi-generator.tech
+            destination:
+              address: address
+              memo: memo
+            bpay_qr_content: https://openapi-generator.tech
+            bpay_deeplink: bpay_deeplink
+            bpay_checkout_url: https://openapi-generator.tech
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          late: true
+          charge_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          payment_amount: payment_amount
+          created_at: 2000-01-23T04:56:07.000+00:00
+          currency:
+            symbol: symbol
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            meta: "{}"
+            fiat: false
+            scale: 6
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            expiry_delta: 0
+            network: network
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          hash: hash
+          status: ""
+          sent_amount: sent_amount
+        - pay_instructions:
+            bpay_universal_url: https://openapi-generator.tech
+            destination:
+              address: address
+              memo: memo
+            bpay_qr_content: https://openapi-generator.tech
+            bpay_deeplink: bpay_deeplink
+            bpay_checkout_url: https://openapi-generator.tech
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          late: true
+          charge_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          payment_amount: payment_amount
+          created_at: 2000-01-23T04:56:07.000+00:00
+          currency:
+            symbol: symbol
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            meta: "{}"
+            fiat: false
+            scale: 6
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            expiry_delta: 0
+            network: network
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          hash: hash
+          status: ""
+          sent_amount: sent_amount
+        page_size: 1
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+          title: Items
+          type: array
+        total:
+          title: Total
+          type: integer
+        pages:
+          title: Pages
+          type: integer
+        page_size:
+          title: Page Size
+          type: integer
+        has_next:
+          default: false
+          title: Has Next
+          type: boolean
+        has_prev:
+          default: false
+          title: Has Prev
+          type: boolean
+      required:
+      - items
+      - page_size
+      - pages
+      - total
+      title: "Page[TransactionResponse]"
+      type: object
+    PayInstructions:
+      example:
+        bpay_universal_url: https://openapi-generator.tech
+        destination:
+          address: address
+          memo: memo
+        bpay_qr_content: https://openapi-generator.tech
+        bpay_deeplink: bpay_deeplink
+        bpay_checkout_url: https://openapi-generator.tech
+      properties:
+        destination:
+          $ref: '#/components/schemas/DepositAddress'
+        bpay_qr_content:
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          nullable: true
+          type: string
+        bpay_checkout_url:
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          nullable: true
+          type: string
+        bpay_deeplink:
+          nullable: true
+          type: string
+        bpay_universal_url:
+          format: uri
+          maxLength: 2083
+          minLength: 1
+          nullable: true
+          type: string
+      title: PayInstructions
+      type: object
+    Shipping-Input:
+      example:
+        shipping_phone_no: shipping_phone_no
+        shipping_address:
+          address: address
+          city: city
+          shipping_address_type: "01"
+          state: state
+          region: region
+          zip_code: zip_code
+        shipping_name:
+          last_name: last_name
+          middle_name: middle_name
+          first_name: first_name
+      properties:
+        shipping_name:
+          $ref: '#/components/schemas/Name'
+        shipping_address:
+          $ref: '#/components/schemas/ShippingAddress'
+        shipping_phone_no:
+          format: phone
+          maxLength: 64
+          minLength: 7
+          nullable: true
+          type: string
+      title: Shipping
+      type: object
+    Shipping-Output:
+      example:
+        shipping_phone_no: shipping_phone_no
+        shipping_address:
+          address: address
+          city: city
+          shipping_address_type: "01"
+          state: state
+          region: region
+          zip_code: zip_code
+        shipping_name:
+          last_name: last_name
+          middle_name: middle_name
+          first_name: first_name
+      properties:
+        shipping_name:
+          $ref: '#/components/schemas/Name'
+        shipping_address:
+          $ref: '#/components/schemas/ShippingAddress'
+        shipping_phone_no:
+          format: phone
+          maxLength: 64
+          minLength: 7
+          nullable: true
+          type: string
+      title: Shipping
+      type: object
+    ShippingAddress:
+      example:
+        address: address
+        city: city
+        shipping_address_type: "01"
+        state: state
+        region: region
+        zip_code: zip_code
+      properties:
+        region:
+          pattern: "^\\w{2}$"
+          title: Region
+          type: string
+        state:
+          nullable: true
+          type: string
+        city:
+          nullable: true
+          type: string
+        address:
+          nullable: true
+          type: string
+        zip_code:
+          maxLength: 4
+          nullable: true
+          type: string
+        shipping_address_type:
+          $ref: '#/components/schemas/ShippingAddressType'
+      required:
+      - region
+      title: ShippingAddress
+      type: object
+    ShippingAddressType:
+      enum:
+      - "01"
+      - "02"
+      - "03"
+      - "04"
+      title: ShippingAddressType
+      type: string
+    TransactionResponse:
+      example:
+        pay_instructions:
+          bpay_universal_url: https://openapi-generator.tech
+          destination:
+            address: address
+            memo: memo
+          bpay_qr_content: https://openapi-generator.tech
+          bpay_deeplink: bpay_deeplink
+          bpay_checkout_url: https://openapi-generator.tech
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        late: true
+        charge_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        payment_amount: payment_amount
+        created_at: 2000-01-23T04:56:07.000+00:00
+        currency:
+          symbol: symbol
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          meta: "{}"
+          fiat: false
+          scale: 6
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          expiry_delta: 0
+          network: network
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        hash: hash
+        status: ""
+        sent_amount: sent_amount
+      properties:
+        updated_at:
+          format: date-time
+          nullable: true
+          type: string
+        id:
+          format: uuid
+          title: Id
+          type: string
+        payment_amount:
+          title: Payment Amount
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TransactionStatus'
+          default: pending
+        currency:
+          $ref: '#/components/schemas/CurrencyResponse'
+        charge_id:
+          format: uuid
+          title: Charge Id
+          type: string
+        late:
+          title: Late
+          type: boolean
+        hash:
+          nullable: true
+          type: string
+        created_at:
+          format: date-time
+          title: Created At
+          type: string
+        sent_amount:
+          nullable: true
+          type: string
+        pay_instructions:
+          $ref: '#/components/schemas/PayInstructions'
+      required:
+      - charge_id
+      - created_at
+      - currency
+      - id
+      - late
+      - pay_instructions
+      - payment_amount
+      title: TransactionResponse
+      type: object
+    TransactionStatus:
+      enum:
+      - complete
+      - pending
+      - underpaid
+      - overpaid
+      - expired
+      title: TransactionStatus
+      type: string
+    Id:
+      anyOf:
+      - type: string
+      - format: uuid
+        type: string
+      title: Id
+    Id_1:
+      anyOf:
+      - format: uuid
+        type: string
+      - type: string
+      title: Id
+    Location_inner:
+      anyOf:
+      - type: string
+      - type: integer
+    Meta:
+      anyOf:
+      - type: string
+      - type: number
+    Order_Amount:
+      anyOf:
+      - minimum: 0
+        type: number
+      - type: string
+      title: Order Amount
+    Amount:
+      anyOf:
+      - minimum: 0
+        type: number
+      - type: string
+      title: Amount
+  securitySchemes:
+    HTTPBearer:
+      scheme: bearer
+      type: http
